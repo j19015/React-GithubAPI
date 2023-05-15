@@ -47,3 +47,9 @@
 .h-300{
   height: 300px;
 }
+.MuiPagination-root{
+  display: inline-block;
+}
+.css-wjh20t-MuiPagination-ul{
+  justify-content:center;
+}

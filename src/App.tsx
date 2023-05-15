@@ -3,6 +3,9 @@ import './App.css';
 import { useState,useEffect } from 'react';
 import axios from 'axios'
 import { Box,Card, CardContent, Typography } from '@mui/material';
+import ReactPaginate from 'react-paginate';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
 
 
 type repos_list={
@@ -70,6 +73,12 @@ function App() {
       console.log('検索結果が見つかりませんでした', e);
     }
   }
+
+
+  const handlePageClick = (data: { selected: number }) => {
+    setCurrentPage(data.selected);
+  };
+
   //useEffectを用いて入力が終わったときに実行されるようにする。
 
   useEffect(() => {
@@ -91,8 +100,11 @@ function App() {
       <div  className="flex">
       {
         reposList.length > 0?(
-          reposList.map((repos, index) => (
+          reposList
+          .slice(currentPage*10,(currentPage+1)*10)
+          .map((repos, index) => (
           <div key={index} className='w-25 h-300'>
+            <p>{index}</p>
             <MyCard repos = {repos} />
           </div>
           ))
@@ -100,7 +112,12 @@ function App() {
           <p>検索結果が見つかりませんでした</p>
         )
       }
-      </div>
+    </div>
+      <Pagination 
+      count={10} 
+      color="primary" 
+      onChange={(e,page)=>setCurrentPage(page-1)}
+      />
     </div>
   );
 }
