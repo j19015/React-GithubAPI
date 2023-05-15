@@ -7,9 +7,12 @@ import ReactPaginate from 'react-paginate';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import localforage from 'localforage';
 
 
 type repos_list={
+  //favorite用のid
+  id :number;
   //リポジトリの説明
   description :string;
   //作成日
@@ -28,34 +31,6 @@ type MyCardProps = {
   repos: repos_list;
 }
 
-const MyCard= ({ repos }: MyCardProps) => {
-  return (
-    <Box sx={{m:2,height: '100%'}}>
-      <Card sx={{height: '75%'}}>
-        <CardContent>
-          <Typography>
-            説明:{repos.description}
-          </Typography>
-          <Typography>
-            作成日:{repos.created_at}
-          </Typography>
-          <Typography>
-            更新日時:{repos.updated_at}
-          </Typography>
-          <Typography>
-            Star数:{repos.stargazers_count}
-          </Typography>
-          <Typography>
-            Watch数:{repos.forks_count}
-          </Typography>
-          <Typography>
-            Fork数:{repos.created_at}
-          </Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-}
 
 function App() {
 
@@ -63,6 +38,7 @@ function App() {
   const [keyWord, setKeyWord] = useState('');
   const [reposList,setReposList]=useState<repos_list[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(0);
+  const [favorites, setFavorites] = useState<repos_list[]>([]);
 
   const githubApi = async () => {
     try {
@@ -75,6 +51,59 @@ function App() {
     }
   }
 
+  const handleToggleFavorite=(repos: repos_list)=>{
+    const repoId = repos.id;
+    const isFavorite = favorites.some(favorite => favorite.id === repoId);
+  
+    let updatedFavorites: repos_list[]; // 変数を宣言
+  
+    if (isFavorite) {
+      // お気に入り解除
+      updatedFavorites = favorites.filter(favorite => favorite.id !== repoId);
+      setFavorites(updatedFavorites);
+    } else {
+      // お気に入り登録
+      updatedFavorites = [...favorites, repos];
+      setFavorites(updatedFavorites);
+    }
+  
+    // お気に入り情報をWebストレージに保存
+    localforage.setItem('favorites', updatedFavorites).catch(err => {
+      console.error('お気に入り情報の保存に失敗しました', err);
+    });
+  }
+
+  const MyCard= ({ repos }: MyCardProps) => {
+    return (
+      <Box sx={{m:2,height: '100%'}}>
+        <Card sx={{height: '75%'}}>
+          <CardContent>
+            <Typography>
+              説明:{repos.description}
+            </Typography>
+            <Typography>
+              作成日:{repos.created_at}
+            </Typography>
+            <Typography>
+              更新日時:{repos.updated_at}
+            </Typography>
+            <Typography>
+              Star数:{repos.stargazers_count}
+            </Typography>
+            <Typography>
+              Watch数:{repos.forks_count}
+            </Typography>
+            <Typography>
+              Fork数ss:{repos.created_at}
+            </Typography>
+            <Typography>
+              <button onClick={() =>handleToggleFavorite(repos)}>お気に入り</button>
+            </Typography>
+          </CardContent>
+        </Card>
+      </Box>
+    );
+  }
 
   const handlePageClick = (data: { selected: number }) => {
     setCurrentPage(data.selected);
@@ -111,7 +140,7 @@ function App() {
       }
     </div>
       <Pagination 
-      count={10} 
+      count={reposList.length/6} 
       color="primary" 
       onChange={(e,page)=>setCurrentPage(page-1)}
       sx={{mt:5}}
