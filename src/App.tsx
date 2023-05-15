@@ -92,7 +92,6 @@ function App() {
 
     <div className="App">
       <input
-        value={keyWord}
         type="text"
         onChange = {e=> setKeyWord(e.target.value)} 
       />
