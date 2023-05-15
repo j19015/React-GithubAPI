@@ -1,5 +1,9 @@
 .App {
   text-align: center;
+  padding-top: 50px;
+  background-color: rgb(219, 237, 244);
+  min-height: 100vh;
+  font-family: 'SimSun';
 }
 
 .App-logo {

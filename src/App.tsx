@@ -6,6 +6,7 @@ import { Box,Card, CardContent, Typography } from '@mui/material';
 import ReactPaginate from 'react-paginate';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
 
 
 type repos_list={
@@ -65,7 +66,7 @@ function App() {
 
   const githubApi = async () => {
     try {
-      const repoRes = await axios.get(`https://api.github.com/search/repositories?q={keyword}`);
+      const repoRes = await axios.get(`https://api.github.com/search/repositories?q=${keyWord}`);
       console.log(repoRes.data.items);
       setReposList(repoRes.data.items);
       console.log('リポジトリ読み込み完了');
@@ -91,19 +92,16 @@ function App() {
   return (
 
     <div className="App">
-      <input
-        type="text"
-        onChange = {e=> setKeyWord(e.target.value)} 
-      />
+      <TextField onChange = {e=> setKeyWord(e.target.value)} id="outlined-basic" label="Repositries" variant="outlined" />
       <h1>{keyWord}</h1>
       <div  className="flex">
       {
         reposList.length > 0?(
           reposList
-          .slice(currentPage*10,(currentPage+1)*10)
+          .slice(currentPage*6,(currentPage+1)*6)
           .map((repos, index) => (
           <div key={index} className='w-25 h-300'>
-            <p>{index}</p>
+            <p>No.{index+(currentPage*5)}</p>
             <MyCard repos = {repos} />
           </div>
           ))
@@ -116,6 +114,7 @@ function App() {
       count={10} 
       color="primary" 
       onChange={(e,page)=>setCurrentPage(page-1)}
+      sx={{mt:5}}
       />
     </div>
   );
