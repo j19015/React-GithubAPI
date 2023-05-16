@@ -1,15 +1,24 @@
 import React from 'react';
 import './App.css';
+//状態遷移
 import { useState,useEffect } from 'react';
+
+//非同期処理  
 import axios from 'axios'
-import { Box,Card, CardContent, Typography } from '@mui/material';
+
+//pagination
 import ReactPaginate from 'react-paginate';
+
+//WebStorage
+import localforage from 'localforage';
+import { updateSourceFile } from 'typescript';
+
+//Material UI
+import Button from '@mui/material/Button';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import localforage from 'localforage';
-import { updateSourceFile } from 'typescript';
-import Button from '@mui/material/Button';
+import { Box,Card, CardContent, Typography } from '@mui/material';
 
 //型の指定
 type repos_list={
@@ -43,6 +52,7 @@ function App() {
   const [reposList,setReposList]=useState<repos_list[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [favorites, setFavorites] = useState<repos_list[]>([]);
+  const [myFavorites, setMyFavorites] = useState(true);
 
   //githubのリポジトリ検索を行うAPI
   const githubApi = async () => {
@@ -52,6 +62,7 @@ function App() {
       setReposList(repoRes.data.items);
       console.log('リポジトリ読み込み完了');
     } catch (e) {
+      setReposList([]);
       console.log('検索結果が見つかりませんでした', e);
     }
   }
@@ -103,7 +114,7 @@ function App() {
     });
   }
 
-  //お気に入りに入っているか入っていないかを判定
+  //お気に入りに入っているか入っていないかを判定する関数
   const judgeFavorites=(repos: repos_list)=>{
     const repoId = repos.id;
     const isFavorite = favorites.some(favorite => favorite.id === repoId);
@@ -115,11 +126,34 @@ function App() {
       return(
         <Button sx={{ml:5}} onClick={() =>handleToggleFavorite(repos)} variant="contained">お気に入り</Button>
       );
-
     }
-      
   }
 
+  //自分のお気に入りか、情報全てかを選択
+  const myFavoriteBool=()=>{
+    if(myFavorites){
+      setMyFavorites(false);
+      setReposList(favorites);
+    }else{
+      setMyFavorites(true);
+      githubApi();
+    }
+  }
+
+  // 上記のボタンの表示
+  const myFavoriteButton=()=>{
+    if(myFavorites){
+      return(
+        <Button sx={[{mb:5},{mr:5}]}variant="outlined" onClick={myFavoriteBool}>お気に入りを表示</Button>
+      );
+    }else{
+      return(
+        <Button sx={[{mb:5},{mr:5}]}variant="outlined" onClick={myFavoriteBool}>情報をすべて表示</Button>
+      );
+    }
+  }
+
+  //cardのレイアウト
   const MyCard= ({ repos }: MyCardProps) => {
     return (
       <Box sx={{m:2,height: '100%'}}>
@@ -161,10 +195,16 @@ function App() {
     return () => clearTimeout(timer)
   }, [keyWord])
 
+  useEffect(() => {
+    
+  }, [myFavoriteBool])
 
   //メインのJSX
   return (
     <div className="App">
+      <div style={{textAlign:'right'}}>
+        {myFavoriteButton()}
+      </div>
       <TextField onChange = {e=> setKeyWord(e.target.value)} id="outlined-basic" label="Repositries" variant="outlined" />
       <h1>{keyWord}</h1>
       <div  className="flex">
@@ -187,7 +227,7 @@ function App() {
       }
     </div>
       <Pagination 
-      count={reposList.length/6} 
+      count={Math.ceil(reposList.length / 6)} 
       color="primary" 
       onChange={(e,page)=>setCurrentPage(page-1)}
       sx={{mt:5}}
