@@ -6,6 +6,8 @@ import { useState,useEffect } from 'react';
 //非同期処理  
 import axios from 'axios'
 
+//api呼び出し
+import { githubApi } from './api';
 //pagination
 import ReactPaginate from 'react-paginate';
 
@@ -13,35 +15,19 @@ import ReactPaginate from 'react-paginate';
 import localforage from 'localforage';
 import { updateSourceFile } from 'typescript';
 
+//型宣言
+import {repos_list,MyCardProps} from './reposList';
+
 //Material UI
 import Button from '@mui/material/Button';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import { Box,Card, CardContent, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
-//型の指定
-type repos_list={
-  //favorite用のid
-  id :number;
-  //リポジトリの説明
-  description :string;
-  //作成日
-  created_at :string;
-  //更新日
-  updated_at :string;
-  //Star数
-  stargazers_count :number;
-  //Watch数
-  watchers_count :number;
-  //Fork数
-  forks_count :number;
-}
+//Cardのレイアウト
+import { MyCard } from './myCard';
 
-//引数用の指定
-type MyCardProps = {
-  repos: repos_list;
-}
 
 
 //メインの関数
@@ -54,20 +40,14 @@ function App() {
   const [favorites, setFavorites] = useState<repos_list[]>([]);
   const [myFavorites, setMyFavorites] = useState(true);
 
-  //githubのリポジトリ検索を行うAPI
-  const githubApi = async () => {
-    try {
-      const repoRes = await axios.get(`https://api.github.com/search/repositories?q=${keyWord}`);
-      console.log(repoRes.data.items);
-      setReposList(repoRes.data.items);
-      setMyFavorites(true);
-      setCurrentPage(0);
-      console.log('リポジトリ読み込み完了');
-    } catch (e) {
-      setReposList([]);
-      console.log('検索結果が見つかりませんでした', e);
-    }
-  }
+  //githubのリポジトリ検索を行う
+  const githubSearch = async () => {
+    const repoList = await githubApi(keyWord);
+    setReposList(repoList);
+    setMyFavorites(true);
+    setCurrentPage(0);
+    console.log('リポジトリ読み込み完了');
+  };
 
   //ローカルストレージの中のfavoritesの一覧を取得
   const getFavorites=()=>{
@@ -139,7 +119,7 @@ function App() {
       setReposList(favorites);
     }else{
       setMyFavorites(true);
-      githubApi();
+      githubSearch();
     }
   }
 
@@ -154,53 +134,18 @@ function App() {
         <Button sx={[{mb:5},{mr:5}]}variant="outlined" onClick={myFavoriteBool}>情報をすべて表示</Button>
       );
     }
-  }
-
-  //cardのレイアウト
-  const MyCard= ({ repos }: MyCardProps) => {
-    return (
-      <Box sx={{m:2,height: '100%'}}>
-        <Card sx={{height: '75%'}}>
-          <CardContent>
-            <Typography>
-              説明:{repos.description}
-            </Typography>
-            <Typography>
-              作成日:{repos.created_at}
-            </Typography>
-            <Typography>
-              更新日時:{repos.updated_at}
-            </Typography>
-            <Typography>
-              Star数:{repos.stargazers_count}
-            </Typography>
-            <Typography>
-              Watch数:{repos.forks_count}
-            </Typography>
-            <Typography>
-              Fork数ss:{repos.created_at}
-            </Typography>
-          </CardContent>
-        </Card>
-      </Box>
-    );
-  }
-  
+  }  
   
   //useEffectを用いてKeyWordの入力が終わったときに実行されるようにする。
   useEffect(() => {
     const timer = setTimeout(() => {
       //githubのリポジトリを検索
-      githubApi();
+      githubSearch();
       //ローカルのwebストレージからいいね一覧を取得
       getFavorites();
     }, 500)
     return () => clearTimeout(timer)
   }, [keyWord])
-
-  useEffect(() => {
-    
-  }, [myFavoriteBool])
 
   //メインのJSX
   return (
