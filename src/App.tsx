@@ -60,6 +60,8 @@ function App() {
       const repoRes = await axios.get(`https://api.github.com/search/repositories?q=${keyWord}`);
       console.log(repoRes.data.items);
       setReposList(repoRes.data.items);
+      setMyFavorites(true);
+      setCurrentPage(0);
       console.log('リポジトリ読み込み完了');
     } catch (e) {
       setReposList([]);
@@ -132,6 +134,7 @@ function App() {
   //自分のお気に入りか、情報全てかを選択
   const myFavoriteBool=()=>{
     if(myFavorites){
+      setCurrentPage(0);
       setMyFavorites(false);
       setReposList(favorites);
     }else{
@@ -205,8 +208,16 @@ function App() {
       <div style={{textAlign:'right'}}>
         {myFavoriteButton()}
       </div>
-      <TextField onChange = {e=> setKeyWord(e.target.value)} id="outlined-basic" label="Repositries" variant="outlined" />
-      <h1>{keyWord}</h1>
+      <TextField onChange = {e=> setKeyWord(e.target.value)} id="outlined-basic" value={keyWord} label="Repositries" variant="outlined" />
+      
+      { 
+        myFavorites ? (
+          <h1>{keyWord}</h1>
+        ):(
+        <h1>お気に入り一覧</h1>
+        )
+      }
+      
       <div  className="flex">
       {
         reposList.length > 0?(
