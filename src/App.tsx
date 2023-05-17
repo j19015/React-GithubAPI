@@ -102,11 +102,11 @@ function App() {
     const isFavorite = favorites.some(favorite => favorite.id === repoId);
     if(isFavorite){
       return(
-        <Button sx={{ml:5}} onClick={() =>handleToggleFavorite(repos)} variant="contained">お気に入り解除</Button>
+        <Button sx={{ml:5}} onClick={() =>handleToggleFavorite(repos)} variant="contained"><img src="/images/star-on.png"></img></Button>
       );
     }else{
       return(
-        <Button sx={{ml:5}} onClick={() =>handleToggleFavorite(repos)} variant="contained">お気に入り</Button>
+        <Button sx={{ml:5}} onClick={() =>handleToggleFavorite(repos)} variant="contained"><img src="/images/star-off.png"></img></Button>
       );
     }
   }
